@@ -1,19 +1,23 @@
-import pygame
-import random
 import os
+import random
+
+import pygame
+
 import quickbrain as qb
 
-#A playground to test out how the best bird does, without having to train it
-#or see the other birds
+# A playground to test out how the best bird does, without having to train it
+# or see the other birds
 
 pygame.init()
 SIZE = [400, 708]
-FONT = pygame.font.SysFont('arialrounded', 50)
+FONT = pygame.font.SysFont("arialrounded", 50)
 FPS = 30
+
 
 class Bird:
     def __init__(self):
-        self.brain = qb.load('auto_bestbrain.qb')
+        self.brain = qb.load("auto_bestbrain.qb")
+        self.fitness = 0
         self.x = 50
         self.y = 350
         self.jump = 0
@@ -21,9 +25,11 @@ class Bird:
         self.gravity = 10
         self.dead = False
         self.sprite = 0
-        self.bird_sprites = [pygame.image.load("images/1.png").convert_alpha(),
-                             pygame.image.load("images/2.png").convert_alpha(),
-                             pygame.image.load("images/dead.png").convert_alpha()]
+        self.bird_sprites = [
+            pygame.image.load("images/1.png").convert_alpha(),
+            pygame.image.load("images/2.png").convert_alpha(),
+            pygame.image.load("images/dead.png").convert_alpha(),
+        ]
         # self.img_rect =
 
     def move(self):
@@ -80,8 +86,12 @@ class Pillar:
 
 class Options:
     def __init__(self):
-        self.score_img = pygame.image.load("images/score.png").convert_alpha()  # score board image
-        self.play_img = pygame.image.load("images/play.png").convert_alpha()  # play button image
+        self.score_img = pygame.image.load(
+            "images/score.png"
+        ).convert_alpha()  # score board image
+        self.play_img = pygame.image.load(
+            "images/play.png"
+        ).convert_alpha()  # play button image
         self.play_rect = self.play_img.get_rect()
         self.score_rect = self.score_img.get_rect()
         self.align_position()
@@ -102,7 +112,9 @@ class Game:
     def __init__(self):
         self.screen = pygame.display.set_mode((SIZE[0], SIZE[1]))
         pygame.display.set_caption("Flappy Bird")
-        self.background = pygame.image.load("images/background.png").convert()  # background image
+        self.background = pygame.image.load(
+            "images/background.png"
+        ).convert()  # background image
         self.pillar_x = 400
         self.offset = 0
         self.top_p = Pillar(1)  # top pillar
@@ -122,7 +134,10 @@ class Game:
 
     def get_gap_coords(self):
         gap_x = self.get_pillar_rect(self.top_p).x
-        gap_y = self.get_pillar_rect(self.top_p).bottom + self.get_pillar_rect(self.bot_p).top
+        gap_y = (
+            self.get_pillar_rect(self.top_p).bottom
+            + self.get_pillar_rect(self.bot_p).top
+        )
         gap_y /= 2
         gap_x = int(gap_x)
         gap_y = int(gap_y)
@@ -153,14 +168,22 @@ class Game:
                         self.bird.jump_speed = 10
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     # clicking on the play button (game reset)
-                    if self.bird.dead and self.score_board.play_rect.collidepoint(event.pos):
+                    if self.bird.dead and self.score_board.play_rect.collidepoint(
+                        event.pos
+                    ):
                         self.bird.dead = False
                         self.reset()
 
             self.screen.blit(self.background, (0, 0))
-            self.screen.blit(self.top_p.img, (self.pillar_x, 0 - self.pillar_gap - self.offset))
-            self.screen.blit(self.bot_p.img, (self.pillar_x, 360 + self.pillar_gap - self.offset))
-            self.screen.blit(self.bird.bird_sprites[self.bird.sprite], (self.bird.x, self.bird.y))
+            self.screen.blit(
+                self.top_p.img, (self.pillar_x, 0 - self.pillar_gap - self.offset)
+            )
+            self.screen.blit(
+                self.bot_p.img, (self.pillar_x, 360 + self.pillar_gap - self.offset)
+            )
+            self.screen.blit(
+                self.bird.bird_sprites[self.bird.sprite], (self.bird.x, self.bird.y)
+            )
             self.pillar_move()
             self.bird.move()
             self.bird.bottom_check()
@@ -187,7 +210,9 @@ class Game:
         top_rect = self.get_pillar_rect(self.top_p)
         bot_rect = self.get_pillar_rect(self.bot_p)
         # collision check bird <> pillars
-        if top_rect.colliderect(self.bird.get_rect()) or bot_rect.colliderect(self.bird.get_rect()):
+        if top_rect.colliderect(self.bird.get_rect()) or bot_rect.colliderect(
+            self.bird.get_rect()
+        ):
             # print(self.bird.bird_sprites[self.bird.sprite].get_rect())
             self.bird.dead = True
         # if bird passed the pillars
@@ -206,8 +231,9 @@ class Game:
 
     def show_score(self):
         # score font
-        score_font = FONT.render("{}".format(self.score_board.score),
-                                               True, (255, 80, 80))
+        score_font = FONT.render(
+            "{}".format(self.score_board.score), True, (255, 80, 80)
+        )
         # score font rectangle
         font_rect = score_font.get_rect()
         font_rect.center = (200, 50)
@@ -215,19 +241,22 @@ class Game:
 
     def game_over(self):
         # score font
-        score_font = FONT.render("{}".format(self.score_board.score),
-                                     True, (255, 80, 80))
+        score_font = FONT.render(
+            "{}".format(self.score_board.score), True, (255, 80, 80)
+        )
         # score font rectangle
         font_rect = score_font.get_rect()
         score_rect = self.score_board.score_rect
         play_rect = self.score_board.play_rect  # play button rectangle
         font_rect.center = (200, 230)
         self.screen.blit(self.score_board.play_img, play_rect)  # show play button
-        self.screen.blit(self.score_board.score_img, score_rect)  # show score board image
+        self.screen.blit(
+            self.score_board.score_img, score_rect
+        )  # show score board image
         self.screen.blit(score_font, font_rect)  # show score font
 
 
-#os.chdir(os.path.dirname(__file__))
+# os.chdir(os.path.dirname(__file__))
 if __name__ == "__main__":
     game = Game()
     game.run()

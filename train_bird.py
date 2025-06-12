@@ -1,14 +1,15 @@
-import pygame
-import random
 import os
+import random
+
+import pygame
+
 import quickbrain as qb
 import QuickMaths as qm
 
-
-#Training hall for birds:
+# Training hall for birds:
 #   Runs a Genetic algorithm (with tunable parameters)
 #   to train the birds
-#WARNING: Running a bunch of NNs built on python lists is horrible, performance might suffer!
+# WARNING: Running a bunch of NNs built on python lists is horrible, performance might suffer!
 
 
 POPULATION_SIZE = 100
@@ -25,6 +26,7 @@ SUPER_GRAVITY = 30
 MIN_GAP = 120
 MAX_GAP = 200
 
+
 def search(_list, element):
     for i in range(len(_list)):
         if _list[i] == element:
@@ -32,12 +34,15 @@ def search(_list, element):
             break
     return 0
 
+
 def get_genotype(brain):
     return brain.weights, brain.biases
+
 
 def set_genotype(brain, w, b):
     brain.weights = w
     brain.biases = b
+
 
 def mutate(brain, rate=0.1):
     for i in range(len(brain.weights)):
@@ -46,6 +51,7 @@ def mutate(brain, rate=0.1):
     for i in range(len(brain.biases)):
         mutation = qm.random_matrix(brain.biases[i].rows, brain.biases[i].cols) * rate
         brain.biases[i] += mutation
+
 
 def crossover(w1, b1, w2, b2):
     r_w = [None for i in range(len(w1))]
@@ -66,11 +72,9 @@ def crossover(w1, b1, w2, b2):
     return r_w, r_b
 
 
-
-
 pygame.init()
 SIZE = [400, 708]
-FONT = pygame.font.SysFont('arialrounded', 50)
+FONT = pygame.font.SysFont("arialrounded", 50)
 
 
 class Bird:
@@ -85,9 +89,11 @@ class Bird:
         self.gravity = 10
         self.dead = False
         self.sprite = 0
-        self.bird_sprites = [pygame.image.load("images/1.png").convert_alpha(),
-                             pygame.image.load("images/2.png").convert_alpha(),
-                             pygame.image.load("images/dead.png").convert_alpha()]
+        self.bird_sprites = [
+            pygame.image.load("images/1.png").convert_alpha(),
+            pygame.image.load("images/2.png").convert_alpha(),
+            pygame.image.load("images/dead.png").convert_alpha(),
+        ]
 
     def move(self):
         if self.dead:  # dead bird
@@ -124,7 +130,6 @@ class Bird:
         return img_rect
 
 
-
 class Pillar:
     def __init__(self, pos):
         # pos == True is top , pos == False is bottom
@@ -144,8 +149,12 @@ class Pillar:
 
 class Options:
     def __init__(self):
-        self.score_img = pygame.image.load("images/score.png").convert_alpha()  # score board image
-        self.play_img = pygame.image.load("images/play.png").convert_alpha()  # play button image
+        self.score_img = pygame.image.load(
+            "images/score.png"
+        ).convert_alpha()  # score board image
+        self.play_img = pygame.image.load(
+            "images/play.png"
+        ).convert_alpha()  # play button image
         self.play_rect = self.play_img.get_rect()
         self.score_rect = self.score_img.get_rect()
         self.align_position()
@@ -168,12 +177,16 @@ class Game:
         self.bestbrain = None
         self.screen = pygame.display.set_mode((SIZE[0], SIZE[1]))
         pygame.display.set_caption("Flappy Bird")
-        self.background = pygame.image.load("images/background.png").convert()  # background image
+        self.background = pygame.image.load(
+            "images/background.png"
+        ).convert()  # background image
         self.pillar_x = 400
         self.offset = 0
         self.top_p = Pillar(1)  # top pillar
         self.bot_p = Pillar(0)  # bottom pillar
-        self.pillar_gap = random.randint(MIN_GAP, MAX_GAP)  # gap between pillars, (can be randomised as well)
+        self.pillar_gap = random.randint(
+            MIN_GAP, MAX_GAP
+        )  # gap between pillars, (can be randomised as well)
         self.birds = []  # bird object
         for i in range(POPULATION_SIZE):
             self.birds.append(Bird())
@@ -185,6 +198,7 @@ class Game:
             if not bird.dead:
                 return False
         return True
+
     def pillar_move(self):
         # handling pillar movement in the background
         if self.pillar_x < -100:
@@ -200,28 +214,40 @@ class Game:
 
     def get_gap_coords(self):
         gap_x = self.get_pillar_rect(self.top_p).x
-        gap_y = self.get_pillar_rect(self.top_p).bottom + self.get_pillar_rect(self.bot_p).top
+        gap_y = (
+            self.get_pillar_rect(self.top_p).bottom
+            + self.get_pillar_rect(self.bot_p).top
+        )
         gap_y /= 2
         gap_x = int(gap_x)
         gap_y = int(gap_y)
 
         return (gap_x, gap_y)
+
     def run(self):
         clock = pygame.time.Clock()
         done = True
         while done:
-            #self.background.fill((0,0,0))
+            # self.background.fill((0,0,0))
             pygame.display.update()
-            #pygame.draw.circle(self.background, 3, self.get_gap_coords(), 10)
-            #print(self.birds[0].fitness)
+            # pygame.draw.circle(self.background, 3, self.get_gap_coords(), 10)
+            # print(self.birds[0].fitness)
             for bird in self.birds:
                 if not bird.dead:
-                    #print(bird.decision)
+                    # print(bird.decision)
                     bird.fitness += 1
                     gap = self.get_gap_coords()
-                    distance = qm.math.sqrt((gap[0] - bird.x) **2 + (gap[1] - bird.y) ** 2)
-                    bird.fitness += 100 / distance
-                bird.decision = bird.brain.feed_forward(qm.Matrix(data=[[self.pillar_speed, self.pillar_gap, bird.y, gap[0], gap[1]]]).transpose())
+                    distance = qm.math.sqrt(
+                        (gap[0] - bird.x) ** 2 + (gap[1] - bird.y) ** 2
+                    )
+                    bird.fitness += 100 / (distance + 1e-3)
+                bird.decision = bird.brain.feed_forward(
+                    qm.Matrix(
+                        data=[
+                            [self.pillar_speed, self.pillar_gap, bird.y, gap[0], gap[1]]
+                        ]
+                    ).transpose()
+                )
                 if bird.decision[0][0] >= BIRD_TRESHOLD:
                     bird.jump = 17
                     bird.gravity = 5
@@ -248,10 +274,13 @@ class Game:
                     pygame.quit()
                     quit()
 
-
             self.screen.blit(self.background, (0, 0))
-            self.screen.blit(self.top_p.img, (self.pillar_x, 0 - self.pillar_gap - self.offset))
-            self.screen.blit(self.bot_p.img, (self.pillar_x, 360 + self.pillar_gap - self.offset))
+            self.screen.blit(
+                self.top_p.img, (self.pillar_x, 0 - self.pillar_gap - self.offset)
+            )
+            self.screen.blit(
+                self.bot_p.img, (self.pillar_x, 360 + self.pillar_gap - self.offset)
+            )
             self.pillar_move()
             for bird in self.birds:
                 self.screen.blit(bird.bird_sprites[bird.sprite], (bird.x, bird.y))
@@ -281,17 +310,19 @@ class Game:
         bot_rect = self.get_pillar_rect(self.bot_p)
         # collision check bird <> pillars
         for bird in self.birds:
-            if top_rect.colliderect(bird.get_rect()) or bot_rect.colliderect(bird.get_rect()):
-            # print(self.bird.bird_sprites[self.bird.sprite].get_rect())
+            if top_rect.colliderect(bird.get_rect()) or bot_rect.colliderect(
+                bird.get_rect()
+            ):
+                # print(self.bird.bird_sprites[self.bird.sprite].get_rect())
                 bird.dead = True
-        # if bird passed the pillars
+            # if bird passed the pillars
             elif not self.passed and top_rect.right < bird.x:
                 self.score_board.inc()
                 self.passed = True
                 bird.fitness += 1000
 
     def reset(self):
-        #print("reset")
+        # print("reset")
         # game values reset
         self.score_board.score = 0
         self.top_p = Pillar(1)
@@ -331,8 +362,9 @@ class Game:
 
     def show_score(self):
         # score font
-        score_font = FONT.render("{}".format(self.score_board.score),
-                                               True, (255, 80, 80))
+        score_font = FONT.render(
+            "{}".format(self.score_board.score), True, (255, 80, 80)
+        )
         # score font rectangle
         font_rect = score_font.get_rect()
         font_rect.center = (200, 50)
@@ -340,19 +372,22 @@ class Game:
 
     def game_over(self):
         # score font
-        score_font = FONT.render("{}".format(self.score_board.score),
-                                     True, (255, 80, 80))
+        score_font = FONT.render(
+            "{}".format(self.score_board.score), True, (255, 80, 80)
+        )
         # score font rectangle
         font_rect = score_font.get_rect()
         score_rect = self.score_board.score_rect
         play_rect = self.score_board.play_rect  # play button rectangle
         font_rect.center = (200, 230)
         self.screen.blit(self.score_board.play_img, play_rect)  # show play button
-        self.screen.blit(self.score_board.score_img, score_rect)  # show score board image
+        self.screen.blit(
+            self.score_board.score_img, score_rect
+        )  # show score board image
         self.screen.blit(score_font, font_rect)  # show score font
 
 
-#os.chdir(os.path.dirname(__file__))
+# os.chdir(os.path.dirname(__file__))
 if __name__ == "__main__":
     game = Game()
     game.run()
