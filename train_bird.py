@@ -81,7 +81,7 @@ class Bird:
     def __init__(self):
         self.fitness = 0
         self.decision = 0
-        self.brain = qb.Custom_DFF([5, 2], qm.Activations.sigmoid)
+        self.brain = qb.Custom_DFF([3, 5, 2], qm.Activations.sigmoid)
         self.x = 50
         self.y = 350
         self.jump = 0
@@ -242,11 +242,7 @@ class Game:
                     )
                     bird.fitness += 100 / (distance + 1e-3)
                 bird.decision = bird.brain.feed_forward(
-                    qm.Matrix(
-                        data=[
-                            [self.pillar_speed, self.pillar_gap, bird.y, gap[0], gap[1]]
-                        ]
-                    ).transpose()
+                    qm.Matrix(data=[[bird.y, gap[0], gap[1]]]).transpose()
                 )
                 if bird.decision[0][0] >= BIRD_TRESHOLD:
                     bird.jump = 17
