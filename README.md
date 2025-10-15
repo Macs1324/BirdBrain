@@ -1,6 +1,8 @@
 # **BirdBrain**
 A handmade AI experiment
 
+![til](./demo.gif)
+
 ## What is this?
 
 *A flappy bird clone controlled by a Deep neural network entirely built from python lists*
