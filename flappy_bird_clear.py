@@ -319,6 +319,9 @@ class Game:
             for output_pos in output_positions:
                 pygame.draw.line(self.screen, (80, 80, 80), hidden_pos, output_pos, 1)
 
+        # Font for activation values
+        tiny_font = pygame.font.SysFont("arialrounded", 8)
+
         # Draw input layer neurons
         for i, (neuron, pos) in enumerate(zip(input_layer, input_positions)):
             activation = neuron[0]
@@ -327,6 +330,10 @@ class Game:
             color = (color_val, color_val, color_val)
             pygame.draw.circle(self.screen, color, pos, neuron_radius)
             pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+            # Draw activation value
+            act_text = tiny_font.render(f"{activation:.2f}", True, (255, 255, 255))
+            text_rect = act_text.get_rect(center=(pos[0], pos[1] - 10))
+            self.screen.blit(act_text, text_rect)
 
         # Draw hidden layer neurons
         if all_hidden_neurons:
@@ -336,6 +343,10 @@ class Game:
                 color = (color_val, color_val, color_val)
                 pygame.draw.circle(self.screen, color, pos, neuron_radius)
                 pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+                # Draw activation value
+                act_text = tiny_font.render(f"{activation:.2f}", True, (255, 255, 255))
+                text_rect = act_text.get_rect(center=(pos[0], pos[1] - 10))
+                self.screen.blit(act_text, text_rect)
 
         # Draw output layer neurons
         for neuron, pos in zip(output_layer, output_positions):
@@ -344,6 +355,10 @@ class Game:
             color = (color_val, color_val, color_val)
             pygame.draw.circle(self.screen, color, pos, neuron_radius)
             pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+            # Draw activation value
+            act_text = tiny_font.render(f"{activation:.2f}", True, (255, 255, 255))
+            text_rect = act_text.get_rect(center=(pos[0], pos[1] - 10))
+            self.screen.blit(act_text, text_rect)
 
         # Draw labels
         small_font = pygame.font.SysFont("arialrounded", 12)
