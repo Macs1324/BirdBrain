@@ -192,6 +192,7 @@ class Game:
                 self.show_score()
             else:
                 self.game_over()
+            self.draw_neural_network()  # Draw neural network visualization
             pygame.display.flip()
 
     def get_pillar_rect(self, pillar):
@@ -254,6 +255,100 @@ class Game:
             self.score_board.score_img, score_rect
         )  # show score board image
         self.screen.blit(score_font, font_rect)  # show score font
+
+    def draw_neural_network(self):
+        # Visualize neural network activations in bottom right corner
+        viz_width = 120
+        viz_height = 150
+        viz_x = SIZE[0] - viz_width - 10
+        viz_y = SIZE[1] - viz_height - 10
+
+        # Semi-transparent background
+        surface = pygame.Surface((viz_width, viz_height))
+        surface.set_alpha(60)
+        surface.fill((30, 30, 30))
+        self.screen.blit(surface, (viz_x, viz_y))
+
+        # Get activations from the brain (Custom_DFF stores layers in self.layers)
+        input_layer = self.bird.brain.layers[0].matrix  # first layer
+        hidden_layers = [layer.matrix for layer in self.bird.brain.layers[1:-1]]  # middle layers
+        output_layer = self.bird.brain.layers[-1].matrix  # last layer
+
+        # Neuron visualization parameters
+        neuron_radius = 5
+        layer_spacing = 35
+        viz_center_y = viz_y + viz_height // 2
+
+        # Calculate positions for each layer
+        input_x = viz_x + 20
+        hidden_x = viz_x + 20 + layer_spacing
+        output_x = viz_x + 20 + 2 * layer_spacing
+
+        # Calculate vertical positions for input layer (centered)
+        input_positions = []
+        input_height = len(input_layer) * 20
+        input_y_start = viz_center_y - input_height // 2
+        for i in range(len(input_layer)):
+            y_pos = input_y_start + i * 20
+            input_positions.append((input_x, y_pos))
+
+        # Calculate vertical positions for hidden layer (centered)
+        all_hidden_neurons = []
+        for hidden_layer in hidden_layers:
+            all_hidden_neurons.extend(hidden_layer)
+
+        hidden_positions = []
+        if all_hidden_neurons:
+            hidden_height = len(all_hidden_neurons) * 15
+            hidden_y_start = viz_center_y - hidden_height // 2
+            for i in range(len(all_hidden_neurons)):
+                y_pos = hidden_y_start + i * 15
+                hidden_positions.append((hidden_x, y_pos))
+
+        # Calculate vertical position for output layer (centered)
+        output_positions = [(output_x, viz_center_y)]
+
+        # Draw connections (weights) between layers
+        # Input to hidden
+        for input_pos in input_positions:
+            for hidden_pos in hidden_positions:
+                pygame.draw.line(self.screen, (80, 80, 80), input_pos, hidden_pos, 1)
+
+        # Hidden to output
+        for hidden_pos in hidden_positions:
+            for output_pos in output_positions:
+                pygame.draw.line(self.screen, (80, 80, 80), hidden_pos, output_pos, 1)
+
+        # Draw input layer neurons
+        for i, (neuron, pos) in enumerate(zip(input_layer, input_positions)):
+            activation = neuron[0]
+            # Grayscale: higher activation = brighter
+            color_val = min(255, max(0, int(activation * 255)))
+            color = (color_val, color_val, color_val)
+            pygame.draw.circle(self.screen, color, pos, neuron_radius)
+            pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+
+        # Draw hidden layer neurons
+        if all_hidden_neurons:
+            for i, (neuron, pos) in enumerate(zip(all_hidden_neurons, hidden_positions)):
+                activation = neuron[0]
+                color_val = min(255, max(0, int(activation * 255)))
+                color = (color_val, color_val, color_val)
+                pygame.draw.circle(self.screen, color, pos, neuron_radius)
+                pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+
+        # Draw output layer neurons
+        for neuron, pos in zip(output_layer, output_positions):
+            activation = neuron[0]
+            color_val = min(255, max(0, int(activation * 255)))
+            color = (color_val, color_val, color_val)
+            pygame.draw.circle(self.screen, color, pos, neuron_radius)
+            pygame.draw.circle(self.screen, (150, 150, 150), pos, neuron_radius, 1)  # border
+
+        # Draw labels
+        small_font = pygame.font.SysFont("arialrounded", 12)
+        title_text = small_font.render("Brain", True, (200, 200, 200))
+        self.screen.blit(title_text, (viz_x + 5, viz_y + 5))
 
 
 # os.chdir(os.path.dirname(__file__))
